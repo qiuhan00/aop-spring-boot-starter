@@ -9,6 +9,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.date.TimeInterval;
+import cn.hutool.core.lang.UUID;
 import cn.hutool.json.JSONUtil;
 import com.cfang.annotation.ApiLog;
 import com.cfang.dto.BaseInfo;
@@ -16,11 +17,9 @@ import com.cfang.dto.RequestErrorInfo;
 import com.cfang.dto.RequestInfo;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.ProceedingJoinPoint;
-import org.aspectj.lang.annotation.AfterThrowing;
-import org.aspectj.lang.annotation.Around;
-import org.aspectj.lang.annotation.Aspect;
-import org.aspectj.lang.annotation.Pointcut;
+import org.aspectj.lang.annotation.*;
 import org.aspectj.lang.reflect.MethodSignature;
+import org.slf4j.MDC;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
@@ -36,15 +35,26 @@ import org.springframework.web.multipart.MultipartFile;
 @Slf4j
 public class WebLogAspect {
 
+	private final static String TRACE_ID = "traceId";
+
 	@Pointcut("@annotation(com.cfang.annotation.ApiLog)")
 	public void pointcut() {}
-	
+
+	@Before("pointcut()")
+	public void before(JoinPoint joinPoint) {
+		Object[] args = joinPoint.getArgs();
+		String traceId = UUID.randomUUID().toString(true).toUpperCase();
+//		MDC.put(TRACE_ID, traceId);
+	}
+
+	@After("pointcut()")
+	public void after(JoinPoint joinPoint) {
+//		MDC.remove(TRACE_ID);
+	}
+
 	@Around("pointcut()")
 	public Object around(ProceedingJoinPoint proceedingJoinPoint) throws Throwable {
 		TimeInterval interval = DateUtil.timer();
-		// 记录异常信息
-        String errorCode = null;
-        // 处理业务，并透传业务异常
 		Object result = proceedingJoinPoint.proceed();
 		saveLog(proceedingJoinPoint, result, interval);
         return result;
