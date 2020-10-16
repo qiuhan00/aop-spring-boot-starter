@@ -10,6 +10,7 @@ import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
 import org.aspectj.lang.annotation.Pointcut;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
@@ -22,6 +23,7 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Aspect
 @Slf4j
+@ConditionalOnProperty(prefix = "spring", name = "aop.path", havingValue = "true")
 public class ServiceLogAspect {
 
 	@Pointcut("execution(public * com.cfang.service..*.*(..))")
