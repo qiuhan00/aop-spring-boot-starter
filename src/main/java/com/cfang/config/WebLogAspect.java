@@ -42,9 +42,6 @@ public class WebLogAspect {
 	@Around("pointcut()")
 	public Object around(ProceedingJoinPoint proceedingJoinPoint) throws Throwable {
 		TimeInterval interval = DateUtil.timer();
-		// 记录异常信息
-        String errorCode = null;
-        // 处理业务，并透传业务异常
 		Object result = proceedingJoinPoint.proceed();
 		saveLog(proceedingJoinPoint, result, interval);
         return result;
@@ -94,7 +91,9 @@ public class WebLogAspect {
 	        log.info("RequestInfo info:{}", JSONUtil.toJsonStr(requestInfo));
         } catch (Exception ex) {
             log.warn("记录日志发生异常,msg:{}", ex.getMessage());
-        }
+        } finally {
+        	interval = null;
+		}
     }
 
     private Object init(HttpServletRequest httpServletRequest, JoinPoint joinPoint, boolean isError){
